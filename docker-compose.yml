@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  mailbox-monitor:
+    build: .
+    container_name: mailbox-monitor
+    restart: unless-stopped
+    environment:
+      # Email Configuration
+      - IMAP_SERVER=${IMAP_SERVER}
+      - IMAP_PORT=${IMAP_PORT:-993}
+      - EMAIL_USERNAME=${EMAIL_USERNAME}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_MAILBOX=${EMAIL_MAILBOX:-INBOX}
+      
+      # AI API Configuration
+      - AI_API_URL=${AI_API_URL}
+      - AI_API_KEY=${AI_API_KEY}
+      - AI_API_TIMEOUT=${AI_API_TIMEOUT:-30}
+      
+      # GitLab Configuration
+      - GITLAB_URL=${GITLAB_URL}
+      - GITLAB_PRIVATE_TOKEN=${GITLAB_PRIVATE_TOKEN}
+      
+      # Application Configuration
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-60}
+      - MIN_CONFIDENCE=${MIN_CONFIDENCE:-0.7}
+      - DRY_RUN=${DRY_RUN:-false}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - mailbox-logs:/tmp
+    networks:
+      - mailbox-network
+    depends_on:
+      - ai-api
+    healthcheck:
+      test: ["CMD", "python", "main.py", "--health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # AI Ticket Assignment API Service
+  # This is a placeholder - replace with your actual AI API service
+  ai-api:
+    image: ai-ticket-api:latest  # Replace with actual AI API image
+    container_name: ai-ticket-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Adjust port as needed
+    environment:
+      - API_KEY=${AI_API_KEY}
+      - DATABASE_URL=${AI_DATABASE_URL:-sqlite:///app/ai_data.db}
+    volumes:
+      - ai-data:/app/data
+    networks:
+      - mailbox-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mailbox-logs:
+    driver: local
+  ai-data:
+    driver: local
+
+networks:
+  mailbox-network:
+    driver: bridge

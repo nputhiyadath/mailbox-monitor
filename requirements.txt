@@ -1,0 +1,6 @@
+requests==2.31.0
+python-gitlab==4.2.0
+python-dotenv==1.0.0
+email-validator==2.1.0.post1
+beautifulsoup4==4.12.2
+lxml==4.9.3
