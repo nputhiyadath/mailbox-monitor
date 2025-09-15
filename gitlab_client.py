@@ -50,11 +50,12 @@ class GitLabClient:
             
             # Extract project path and issue IID
             # Expected format: /group/project/-/issues/123 or /group/project/issues/123
+            # Also supports multi-level groups: /group/subgroup/project/-/issues/123
             patterns = [
-                r'^/([^/]+/[^/]+)/-/issues/(\d+)',
-                r'^/([^/]+/[^/]+)/issues/(\d+)',
-                r'^/([^/]+/[^/]+)/-/merge_requests/(\d+)',
-                r'^/([^/]+/[^/]+)/merge_requests/(\d+)'
+                r'^/((?:[^/]+/)+[^/]+)/-/issues/(\d+)',
+                r'^/((?:[^/]+/)+[^/]+)/issues/(\d+)',
+                r'^/((?:[^/]+/)+[^/]+)/-/merge_requests/(\d+)',
+                r'^/((?:[^/]+/)+[^/]+)/merge_requests/(\d+)'
             ]
             
             for pattern in patterns:
